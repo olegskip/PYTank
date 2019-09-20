@@ -29,12 +29,20 @@ class gameClass():
             else:
                 print("Loading " + item.getPath())
 
-        self.players.append(playerObject(config.first_player_rect, config.PATH_TO_IMAGES + '\\tank1.png'))
-        self.players.append(playerObject(config.second_player_rect, config.PATH_TO_IMAGES + '\\tank2.png'))
+            self.spawnAllObj()
 
         for i in range(len(levelsManager.levels[0].getFileData())):
             if levelsManager.levels[0].getFileData()[i] == str(1):
                 self.walls.append(wallObject())
+
+    def spawnAllObj(self):
+        self.players.clear()
+        self.players.append(playerObject(config.first_player_rect, config.PATH_TO_IMAGES + '\\tank1.png'))
+        self.players[0].setSpeed(config.first_player_speed, config.first_player_bullet_speed)
+        self.players[0].setSaveDistance(config.first_player_safe_distance)
+        self.players.append(playerObject(config.second_player_rect, config.PATH_TO_IMAGES + '\\tank2.png'))
+        self.players[1].setSpeed(config.second_player_speed, config.second_player_bullet_speed)
+        self.players[1].setSaveDistance(config.second_player_safe_distance)
 
 
     def manageMoveKeyResult(self, key):
@@ -56,12 +64,23 @@ class gameClass():
         if key[pygame.K_RIGHT]:
             self.players[1].movePlayerRight()
 
+        if key[pygame.K_F5]:
+            self.spawnAllObj()
+
 
     def manageBallResult(self, key):
         if key == pygame.K_t:
             self.players[0].addBall()
         if key == pygame.K_m:
             self.players[1].addBall()
+
+    def checkForTouch(self):
+        for player in self.players:
+            if player.isAlive:
+                for ball in player.balls:
+                    if ball.checkForToutch(player.rect):
+                        player.kill()
+
 
 
     def update_scene(self):
@@ -71,18 +90,16 @@ class gameClass():
 
             self.checkForEvent()
             for player in self.players:
+                for ball in player.balls:
+                    pygame.draw.circle(self.gameDisplay, colors.BLACK, (int(ball.rect.x), int(ball.rect.y)), ball.rect.height)
+                    ball.updateBall()
+                    if not ball.isEnable:
+                        player.balls.remove(ball)
                 if player.isAlive:
-                    for ball in player.balls:
-                        pygame.draw.circle(self.gameDisplay, colors.BLACK, (int(ball.rect.x), int(ball.rect.y)), ball.rect.height)
-                        ball.updateBall()
-                        if not ball.isEnable:
-                            player.balls.remove(ball)
-                        if pygame.sprite.collide_rect(player, ball):
-                            player.isAlive = False
-
                     self.gameDisplay.blit(player.image, player.rect)
 
-            pygame.display.update()
+            self.checkForTouch()
+            pygame.display.flip()
 
             self.clock.tick(60)
 
