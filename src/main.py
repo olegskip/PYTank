@@ -1,10 +1,10 @@
-import gameClass
+import game
 
 
 def main():
-    game = gameClass.gameClass()
-    game.update_scene()
+    main_game = game.Game()
+    main_game.update_scene()
+
 
 if __name__ == '__main__':
     main()
-
